@@ -5,7 +5,7 @@
   <version>0.0.0</version>
   <description>Example of minimal pub/sub using rclpy</description>
   <maintainer email="sergey.mirzoev@nami.ru">Sergey Mirzoev</maintainer>
-  <license>TODO: License declaration</license>
+  <license>Apache License 2.0</license>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
@@ -15,4 +15,7 @@
   <export>
     <build_type>ament_python</build_type>
   </export>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
 </package>

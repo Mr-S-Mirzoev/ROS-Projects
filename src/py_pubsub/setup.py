@@ -16,10 +16,12 @@ setup(
     maintainer='Sergey Mirzoev',
     maintainer_email='sergey.mirzoev@nami.ru',
     description='Example of minimal pub/sub using rclpy',
-    license='TODO: License declaration',
+    license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'talker = py_pubsub.publisher_member_function:main',
+            'listener = py_pubsub.subscriber_member_function:main',
         ],
     },
 )
