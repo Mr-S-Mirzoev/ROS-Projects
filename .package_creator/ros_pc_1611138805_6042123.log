@@ -1,0 +1,4 @@
+[DEBUG]: Got values = {0: 'more_interfaces', 1: 'Tutorial for separate interface package\n', 2: 'Sergey Mirzoev', 3: 'sergey.mirzoev@nami.ru', 4: 'Apache License 2.0', 5: 'ament_cmake', 6: '', 7: ''}
+[DEBUG]: Formed a request = ['ros2', 'pkg', 'create', 'more_interfaces', '--description', 'Tutorial for separate interface package', '--maintainer-name', 'Sergey Mirzoev', '--maintainer-email', 'sergey.mirzoev@nami.ru', '--license', 'Apache License 2.0', '--build-type', 'ament_cmake']
+[DEBUG]: During procceeding got errors = 
+[DEBUG]: Result of execution in a window = 0

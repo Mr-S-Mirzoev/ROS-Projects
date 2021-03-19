@@ -86,7 +86,7 @@ def form_a_request(values):
         if values[i + 1] != '':
             request.append(flags[i])
             if i != 5:
-                request.append(values[i + 1])
+                request.append(values[i + 1].strip())
             else:
                 print(str(values[i + 1]))
                 print(str(values[i + 1]).split(" "))

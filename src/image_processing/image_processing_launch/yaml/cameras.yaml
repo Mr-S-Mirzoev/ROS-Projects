@@ -1,0 +1,45 @@
+%YAML:1.0
+
+camera_left:
+  CameraExtrinsicMat: !!opencv-matrix
+    rows: 4
+    cols: 4
+    dt: d
+    data: [   -0.0534,    0.0753,    0.9957,    0.5521,
+              -0.9982,    0.0220,   -0.0552,    0.1515,
+              -0.0261,   -0.9969,    0.0740,   -0.6889,
+                  0,         0,         0,    1.0000]
+  CameraMat: !!opencv-matrix
+    rows: 3
+    cols: 3
+    dt: d
+    data: [ 2495.5,   0.,  664., 0., 2504.5, 493.5, 0.,    0.,    1.  ]
+  DistCoeff: !!opencv-matrix
+    rows: 1
+    cols: 5
+    dt: d
+    data: [ -0.224, 0.0702, 0.0, 0.0, 0.0 ]
+  ImageSize: [ 1280, 1024 ]
+  ReprojectionError: 0.392
+
+camera_right:
+  CameraExtrinsicMat: !!opencv-matrix
+    rows: 4
+    cols: 4
+    dt: d
+    data: [   -0.0967,   -0.0378,    0.9946,    0.5050,
+              -0.9953,    0.0027,   -0.0966,   -0.1779,
+                0.0010,   -0.9993,   -0.0379,   -0.7372,
+                    0,         0,         0,    1.0000]
+  CameraMat: !!opencv-matrix
+    rows: 3
+    cols: 3
+    dt: d
+    data: [ 848.27, 0., 661.82, 0., 849.78, 518.76, 0., 0., 1. ]
+  DistCoeff: !!opencv-matrix
+    rows: 1
+    cols: 5
+    dt: d
+    data: [ -0.224, 0.0702, 0.0, 0.0, 0.0 ]
+  ImageSize: [ 1280, 1024 ]
+  ReprojectionError: 0.392
