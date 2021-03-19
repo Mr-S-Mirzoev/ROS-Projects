@@ -78,7 +78,7 @@ namespace image_processing {
         this->get_string_parameter_with_default_("camera_info_topic", camera_info_name, "/camera_info");
         RCLCPP_INFO(this->get_logger(), "[%s] camera_info_name: %s", this->get_name(), camera_info_name.c_str());
 
-        this->get_string_parameter_with_default_("projection_matric_topic", projection_matrix_topic, "/projection_matrix");
+        this->get_string_parameter_with_default_("projection_matrix_topic", projection_matrix_topic, "/projection_matrix");
         RCLCPP_INFO(this->get_logger(), "[%s] projection_matrix_topic: %s", this->get_name(), projection_matrix_topic.c_str());
 
         instrinsics_parsed_ = false;

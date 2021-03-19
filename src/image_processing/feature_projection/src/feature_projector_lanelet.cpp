@@ -71,181 +71,6 @@ static constexpr const char White[] = "white";
 
 namespace trafficlight_recognizer
 {
-    /* Callback function to shift projection result */
-    void FeatureProjector::adjustXYCallback(autoware_auto_msgs::msg::AdjustXY::SharedPtr config_msg)
-    {
-        if (config_msg->x.size() != config_msg->y.size() || config_msg->x.size() != frame_count) {
-            RCLCPP_ERROR(this->get_logger(), "Sizes of autoware_msgs/AdjustXY x, y vectors mismatch with adjusts_for_projections size");
-            throw std::logic_error("Sizes mismatch: AdjustXY doesn't match configured quantity of frames " + 
-                                    std::to_string(config_msg->x.size()) + " " + std::to_string(frame_count));
-        }
-
-        for (size_t index = 0; index < frame_count; ++index) {
-            adjusts_for_projections[index].x = config_msg->x[index];
-            adjusts_for_projections[index].y = config_msg->y[index];
-        }
-    }
-
-    /**
-     * [FeatureProjector::cameraInfoCallback callback function for camera info]
-     */
-    void FeatureProjector::cameraInfoCallback(sensor_msgs::msg::CameraInfo::SharedPtr camInfoMsg) {
-        size_t index = camera_idxs[camInfoMsg->header.frame_id];
-
-        info_by_camera[index].fx = static_cast<float>(camInfoMsg->p[0]);
-        info_by_camera[index].fy = static_cast<float>(camInfoMsg->p[5]);
-        info_by_camera[index].imageWidth = camInfoMsg->width;
-        info_by_camera[index].imageHeight = camInfoMsg->height;
-        info_by_camera[index].cx = static_cast<float>(camInfoMsg->p[2]);
-        info_by_camera[index].cy = static_cast<float>(camInfoMsg->p[6]);
-    }
-
-    // @brief get transformation between given frames
-    void FeatureProjector::getTransform(const std::string& camera_name, const std::string& to_frame, 
-                                             Eigen::Quaternionf* ori, Eigen::Vector3f* pos)
-    {
-        int index = camera_idxs[camera_name];
-        geometry_msgs::msg::TransformStamped* tf = &transforms[index];
-
-        if (ori == nullptr || pos == nullptr || tf == nullptr) {
-            RCLCPP_ERROR(this->get_logger(), "getTransform: 'ori', 'pos', or 'tf' is null pointer!");
-            return;
-        }
-
-/*
-        std::shared_ptr<tf2_ros::Buffer> buffer = std::make_shared<tf2_ros::Buffer>(
-            this->get_node_clock_interface().get()->get_clock()
-        );
-        std::shared_ptr<tf2_ros::TransformListener> transform_listener_ = std::make_shared<tf2_ros::TransformListener>(
-            *buffer,
-            std::shared_ptr<rclcpp::Node>(this, [](auto) {}), 
-            false
-        );
-
-        rclcpp::WallRate loop_rate(std::chrono::milliseconds(10));
-        bool got_map_origin = false;
-
-        const auto stamp = time_utils::from_message(this->now());
-
-        while (!got_map_origin && rclcpp::ok()) {
-
-        }
-        
-        auto p = tf->transform.translation;
-        auto o = tf->transform.rotation;
-
-        *ori = {float(o.w), float(o.x), float(o.y), float(o.z)};
-        *pos = {float(p.x), float(p.y), float(p.z)};
-
-        RCLCPP_INFO(
-            this->get_logger(),
-            "Gottcha!!!!!!!!!!!!"
-        );
-*/
-        // Wait for up to one second for the first transforms to become avaiable. 
-        tfl_.buffer_.canTransform(camera_name, to_frame, tf2::TimePoint(), tf2::durationFromSec(1.0));
-
-        try
-        {
-            geometry_msgs::msg::TransformStamped echo_transform;
-            echo_transform = tfl_.buffer_.lookupTransform(camera_name, to_frame, tf2::TimePoint());
-            *tf = echo_transform;
-        }
-        catch (tf2::TransformException& ex)
-        {
-            std::cout << "Failure at " << this->get_clock()->now().seconds() << std::endl;
-            std::cout << "Exception thrown:" << ex.what()<< std::endl;
-            std::cout << "The current list of frames is:" <<std::endl;
-            std::cout << tfl_.buffer_.allFramesAsString()<<std::endl;
-        }
-    }
-
-    Eigen::Vector3f FeatureProjector::transform(
-        const Eigen::Vector3f& source_point, 
-        const geometry_msgs::msg::TransformStamped& transformation) 
-    {
-        geometry_msgs::msg::Point32 pt3_in;
-        pt3_in.set__x(source_point.x());
-        pt3_in.set__y(source_point.y());
-        pt3_in.set__z(source_point.z());
-        
-        geometry_msgs::msg::Point32 pt3_out;
-        tf2::doTransform(pt3_in, pt3_out, transformation);
-        Eigen::Vector3f tf_v(pt3_out.x, pt3_out.y, pt3_out.z);
-        return tf_v;
-    }
-
-    
-    bool FeatureProjector::project2(const std::string &cam_id, const Eigen::Vector3f &pt,  int* u, int* v, bool useOpenGLCoord)
-    {
-        if (u == nullptr || v == nullptr) {
-            RCLCPP_ERROR(this->get_logger(), "[FeatureProjector::project2]: u or v is null pointer!");
-            return false;
-        }
-
-        int index = camera_idxs[cam_id];
-        auto info = info_by_camera[index];
-
-        auto _pt = transform(pt, transforms[index]);
-        RCLCPP_INFO(
-            this->get_logger(), 
-            "_pt.x = %.2f, _pt.y = %.2f, _pt.z = %.2f",
-            _pt.x(), _pt.y(), _pt.z()
-        );
-        float _u = _pt.x() * info.fx / _pt.z() + info.cx;
-        float _v = _pt.y() * info.fy / _pt.z() + info.cy;
-
-        RCLCPP_INFO(
-            this->get_logger(), 
-            "u = %.2f, v = %.2f; tf = {%.2f, %.2f, %.2f}", 
-            _u, 
-            _v, 
-            transforms[index].transform.translation.x,
-            transforms[index].transform.translation.y,
-            transforms[index].transform.translation.z
-        );
-
-        *u = static_cast<int>(_u);
-        *v = static_cast<int>(_v);
-        if (*u < 0 || info.imageWidth < *u || 
-            *v < 0 || info.imageHeight < *v || 
-            _pt.z() < near_plane_ || far_plane_ < _pt.z()) {
-
-            *u = -1;
-            *v = -1;
-            return false;
-        }
-
-        if (useOpenGLCoord)
-		    *v = int(info.imageHeight) - *v;
-
-        return true;
-    }
-
-    template <typename T>
-    void FeatureProjector::get_parameter_(const std::string &name, T& variable) {
-        try {
-            variable = this->declare_parameter(name).get<T>();
-        } catch (std::runtime_error &e) {
-            RCLCPP_INFO(this->get_logger(), "Exception during obtaining parameter [%s]: %s", name.c_str(), e.what());
-        }
-    }
-
-    void FeatureProjector::get_string_parameter_with_default_(const std::string &name, std::string& variable, const std::string &def) {
-        this->get_parameter_(name, variable);
-        if (variable.empty()) {
-            variable = def;
-        }
-    }
-
-    template <typename T>
-    void FeatureProjector::get_parameter_(const std::string &name, T& variable, const T &def) {
-        this->get_parameter_(name, variable);
-        if (!bool(variable)) {
-            variable = def;
-        }
-    }
-
     FeatureProjector::FeatureProjector(const rclcpp::NodeOptions &options): 
         Node("feature_projection", options), tfl_(this->get_clock()) {
     
@@ -399,6 +224,146 @@ namespace trafficlight_recognizer
                 this
             )
         );
+    }
+
+    void FeatureProjector::adjustXYCallback(autoware_auto_msgs::msg::AdjustXY::SharedPtr config_msg)
+    {
+        if (config_msg->x.size() != config_msg->y.size() || config_msg->x.size() != frame_count) {
+            RCLCPP_ERROR(this->get_logger(), "Sizes of autoware_msgs/AdjustXY x, y vectors mismatch with adjusts_for_projections size");
+            throw std::logic_error("Sizes mismatch: AdjustXY doesn't match configured quantity of frames " + 
+                                    std::to_string(config_msg->x.size()) + " " + std::to_string(frame_count));
+        }
+
+        for (size_t index = 0; index < frame_count; ++index) {
+            adjusts_for_projections[index].x = config_msg->x[index];
+            adjusts_for_projections[index].y = config_msg->y[index];
+        }
+    }
+
+    void FeatureProjector::cameraInfoCallback(sensor_msgs::msg::CameraInfo::SharedPtr camInfoMsg) {
+        size_t index = camera_idxs[camInfoMsg->header.frame_id];
+
+        info_by_camera[index].fx = static_cast<float>(camInfoMsg->p[0]);
+        info_by_camera[index].fy = static_cast<float>(camInfoMsg->p[5]);
+        info_by_camera[index].imageWidth = camInfoMsg->width;
+        info_by_camera[index].imageHeight = camInfoMsg->height;
+        info_by_camera[index].cx = static_cast<float>(camInfoMsg->p[2]);
+        info_by_camera[index].cy = static_cast<float>(camInfoMsg->p[6]);
+    }
+
+    void FeatureProjector::getTransform(const std::string& camera_name, const std::string& to_frame, 
+                                             Eigen::Quaternionf* ori, Eigen::Vector3f* pos)
+    {
+        int index = camera_idxs[camera_name];
+        geometry_msgs::msg::TransformStamped* tf = &transforms[index];
+
+        if (ori == nullptr || pos == nullptr || tf == nullptr) {
+            RCLCPP_ERROR(this->get_logger(), "getTransform: 'ori', 'pos', or 'tf' is null pointer!");
+            return;
+        }
+
+        // Wait for up to one second for the first transforms to become avaiable. 
+        tfl_.buffer_.canTransform(camera_name, to_frame, tf2::TimePoint(), tf2::durationFromSec(1.0));
+
+        try
+        {
+            geometry_msgs::msg::TransformStamped echo_transform;
+            echo_transform = tfl_.buffer_.lookupTransform(camera_name, to_frame, tf2::TimePoint());
+            *tf = echo_transform;
+        }
+        catch (tf2::TransformException& ex)
+        {
+            std::cout << "Failure at " << this->get_clock()->now().seconds() << std::endl;
+            std::cout << "Exception thrown:" << ex.what()<< std::endl;
+            std::cout << "The current list of frames is:" <<std::endl;
+            std::cout << tfl_.buffer_.allFramesAsString()<<std::endl;
+        }
+    }
+
+    Eigen::Vector3f FeatureProjector::transform(
+        const Eigen::Vector3f& source_point, 
+        const geometry_msgs::msg::TransformStamped& transformation) 
+    {
+        geometry_msgs::msg::Point32 pt3_in;
+        pt3_in.set__x(source_point.x());
+        pt3_in.set__y(source_point.y());
+        pt3_in.set__z(source_point.z());
+        
+        geometry_msgs::msg::Point32 pt3_out;
+        tf2::doTransform(pt3_in, pt3_out, transformation);
+        Eigen::Vector3f tf_v(pt3_out.x, pt3_out.y, pt3_out.z);
+        return tf_v;
+    }
+
+    
+    bool FeatureProjector::project2(const std::string &cam_id, const Eigen::Vector3f &pt,  int* u, int* v, bool useOpenGLCoord)
+    {
+        if (u == nullptr || v == nullptr) {
+            RCLCPP_ERROR(this->get_logger(), "[FeatureProjector::project2]: u or v is null pointer!");
+            return false;
+        }
+
+        int index = camera_idxs[cam_id];
+        auto info = info_by_camera[index];
+
+        auto _pt = transform(pt, transforms[index]);
+        RCLCPP_INFO(
+            this->get_logger(), 
+            "_pt.x = %.2f, _pt.y = %.2f, _pt.z = %.2f",
+            _pt.x(), _pt.y(), _pt.z()
+        );
+        float _u = _pt.x() * info.fx / _pt.z() + info.cx;
+        float _v = _pt.y() * info.fy / _pt.z() + info.cy;
+
+        RCLCPP_INFO(
+            this->get_logger(), 
+            "u = %.2f, v = %.2f; tf = {%.2f, %.2f, %.2f}", 
+            _u, 
+            _v, 
+            transforms[index].transform.translation.x,
+            transforms[index].transform.translation.y,
+            transforms[index].transform.translation.z
+        );
+
+        *u = static_cast<int>(_u);
+        *v = static_cast<int>(_v);
+        if (*u < 0 || info.imageWidth < *u || 
+            *v < 0 || info.imageHeight < *v || 
+            _pt.z() < near_plane_ || far_plane_ < _pt.z()) {
+
+            *u = -1;
+            *v = -1;
+            return false;
+        }
+
+        if (useOpenGLCoord)
+		    *v = int(info.imageHeight) - *v;
+
+        return true;
+    }
+
+    template <typename T>
+    void FeatureProjector::get_parameter_(const std::string &name, T& variable) {
+        try {
+            variable = this->declare_parameter(name).get<T>();
+        } catch (std::runtime_error &e) {
+            RCLCPP_INFO(this->get_logger(), "Exception during obtaining parameter [%s]: %s", name.c_str(), e.what());
+        }
+    }
+
+    void FeatureProjector::get_string_parameter_with_default_(const std::string &name, std::string& variable, const std::string &def) {
+        this->get_parameter_(name, variable);
+        if (variable.empty()) {
+            variable = def;
+        }
+    }
+
+    template <typename T>
+    void FeatureProjector::get_parameter_(const std::string &name, T& variable, const T &def) {
+        this->get_parameter_(name, variable);
+        if (!bool(variable)) {
+            variable = def;
+        }
     }
 
     bool FeatureProjector::isInView(
