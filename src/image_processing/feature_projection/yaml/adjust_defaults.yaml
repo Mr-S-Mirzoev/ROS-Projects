@@ -1,0 +1,4 @@
+adjust_defaults:
+  camera_center:
+  - '-10'
+  - '13'

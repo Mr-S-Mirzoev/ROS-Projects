@@ -1,0 +1,4 @@
+[DEBUG]: Got values = {0: 'cpp_parameters', 1: 'C++ tutorial for parameters mastering\n', 2: 'Sergey Mirzoev', 3: 'sergey.mirzoev@nami.ru', 4: 'Apache License 2.0', 5: 'ament_cmake', 6: 'rclcpp', 7: ''}
+[DEBUG]: Formed a request = ['ros2', 'pkg', 'create', 'cpp_parameters', '--description', 'C++ tutorial for parameters mastering', '--maintainer-name', 'Sergey Mirzoev', '--maintainer-email', 'sergey.mirzoev@nami.ru', '--license', 'Apache License 2.0', '--build-type', 'ament_cmake', '--dependencies', 'rclcpp']
+[DEBUG]: During procceeding got errors = 
+[DEBUG]: Result of execution in a window = -1

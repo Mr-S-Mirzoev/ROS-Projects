@@ -1,0 +1,8 @@
+camera_name_list : [
+  "camera_center"
+]
+
+adjust_bounds : [
+  -100,
+  100
+]

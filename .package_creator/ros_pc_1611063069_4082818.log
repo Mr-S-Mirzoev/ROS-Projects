@@ -1,0 +1,4 @@
+[DEBUG]: Got values = {0: 'py_srvcli', 1: 'Python client server tutorial\n', 2: 'Sergey Mirzoev', 3: 'sergey.mirzoev@nami.ru', 4: 'Apache License 2.0', 5: 'ament_python', 6: 'rclpy example_interfaces', 7: 'service_member_function'}
+[DEBUG]: Formed a request = ['ros2', 'pkg', 'create', 'py_srvcli', '--description', 'Python client server tutorial\n', '--maintainer-name', 'Sergey Mirzoev', '--maintainer-email', 'sergey.mirzoev@nami.ru', '--license', 'Apache License 2.0', '--build-type', 'ament_python', '--dependencies', 'rclpy', 'example_interfaces', '--node-name', 'service_member_function']
+[DEBUG]: During procceeding got errors = 
+[DEBUG]: Result of execution in a window = 0

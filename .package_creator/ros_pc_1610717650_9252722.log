@@ -1,0 +1,4 @@
+[DEBUG]: Got values = {0: 'cpp_srvcli', 1: 'C++ client server tutorial\n', 2: 'Sergey Mirzoev', 3: 'sergey.mirzoev@nami.ru', 4: 'Apache License 2.0', 5: 'ament_cmake', 6: 'rclcpp example_interfaces', 7: ''}
+[DEBUG]: Formed a request = ['ros2', 'pkg', 'create', 'cpp_srvcli', '--description', 'C++ client server tutorial\n', '--maintainer-name', 'Sergey Mirzoev', '--maintainer-email', 'sergey.mirzoev@nami.ru', '--license', 'Apache License 2.0', '--build-type', 'ament_cmake', '--dependencies', 'rclcpp', 'example_interfaces']
+[DEBUG]: During procceeding got errors = 
+[DEBUG]: Result of execution in a window = 0

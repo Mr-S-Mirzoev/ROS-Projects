@@ -1,0 +1,4 @@
+[DEBUG]: Got values = {0: 'image_processing_launch', 1: 'Launch file for image processing logics\n', 2: 'Sergey Mirzoev', 3: 'sergey.mirzoev@nami.ru', 4: 'Apache License 2.0', 5: 'ament_cmake', 6: 'rclcpp', 7: ''}
+[DEBUG]: Formed a request = ['ros2', 'pkg', 'create', 'image_processing_launch', '--description', 'Launch file for image processing logics', '--maintainer-name', 'Sergey Mirzoev', '--maintainer-email', 'sergey.mirzoev@nami.ru', '--license', 'Apache License 2.0', '--build-type', 'ament_cmake', '--dependencies', 'rclcpp']
+[DEBUG]: During procceeding got errors = 
+[DEBUG]: Result of execution in a window = 0
