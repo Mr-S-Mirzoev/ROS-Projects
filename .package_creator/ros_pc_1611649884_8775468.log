@@ -1,4 +1,0 @@
-[DEBUG]: Got values = {0: 'calibration_publisher', 1: 'Camera instrinsic and extrinsic calibration info publisher\n', 2: 'Sergey Mirzoev', 3: 'sergey.mirzoev@nami.ru', 4: 'Apache License 2.0', 5: 'ament_cmake', 6: 'rclcpp std_msgs autoware_auto_msgs tf2_msgs tf2 tf2_ros', 7: 'calibration_publisher'}
-[DEBUG]: Formed a request = ['ros2', 'pkg', 'create', 'calibration_publisher', '--description', 'Camera instrinsic and extrinsic calibration info publisher', '--maintainer-name', 'Sergey Mirzoev', '--maintainer-email', 'sergey.mirzoev@nami.ru', '--license', 'Apache License 2.0', '--build-type', 'ament_cmake', '--dependencies', 'rclcpp', 'std_msgs', 'autoware_auto_msgs', 'tf2_msgs', 'tf2', 'tf2_ros', '--node-name', 'calibration_publisher']
-[DEBUG]: During procceeding got errors = 
-[DEBUG]: Result of execution in a window = -1
